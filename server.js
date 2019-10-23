@@ -1,8 +1,8 @@
 //Grab Required NPM Packages
 var express = require('express');
 var mongoose = require('mongoose');
-var logger = ('morgan');
-var cheerio = ('cheerio');
+var logger = require('morgan');
+var cheerio = require('cheerio');
 var axios = require('axios');
 
 //Require The Models
@@ -89,9 +89,18 @@ app.get('/workouts/:id', function(req, res){
 
 app.post('/workouts/:id', function(req, res){
 
-
-    
+db.Note.create(req.body)
+.then(function(dbNote){
+    return db.Workout.findOneAndUpdate({_id: req.params.id}, {note: dbNote._id}, {new: true});
 })
+.then(function(dbWorkout){
+    res.json(dbWorkout);
+})
+.catch(function(err){
+    res.json(err);
+});
+    
+});
 
 app.listen(3000, function(){
     console.log('Application Running On PORT 3000');
