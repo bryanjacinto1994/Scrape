@@ -89,6 +89,10 @@ app.get('/workouts/:id', function(req, res){
 
 app.post('/workouts/:id', function(req, res){
 
+
     
 })
 
+app.listen(3000, function(){
+    console.log('Application Running On PORT 3000');
+});
