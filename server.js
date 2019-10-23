@@ -57,5 +57,38 @@ app.get('/scrape', function(req, res){
     });
 });
 
+//Get all workouts
 
+app.get('/workouts', function(req, res){
+    
+    db.Workout.find({}, function(error, found){
+        if(error){
+            res.json(error)
+        }
+        else{
+            res.json(found)
+        }
+    });
+});
+
+//Get specific workouts id and populate with note
+
+app.get('/workouts/:id', function(req, res){
+
+    db.Workout.find({_id: req.params.id})
+    .populate('note')
+    .then(function(dbWorkout){
+        res.json(dbWorkout);
+    })
+    .catch(function(err){
+        res.json(dbWorkout);
+    });
+});
+
+// Route for saving/updating an Workout associated Note
+
+app.post('/workouts/:id', function(req, res){
+
+    
+})
 
