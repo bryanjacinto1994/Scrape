@@ -5,3 +5,57 @@ var logger = ('morgan');
 var cheerio = ('cheerio');
 var axios = require('axios');
 
+//Require The Models
+var db = require('./models');
+
+//Initialize Express
+var app = express();
+
+//Morgan Log requests
+app.use(logger('dev'));
+
+//JSON Parse Request
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+//Public Static Folder
+app.use(express.static('public'));
+
+//MongoDB connection
+// If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+
+mongoose.connect(MONGODB_URI);
+
+//Routes
+
+//Scrape bodybuilding.com
+
+app.get('/scrape', function(req, res){
+
+    axios.get('https://www.bodybuilding.com/workout-plans/')
+    .then(function(response){
+
+        var $ = cheerio.load(response.data);
+
+        $('div.plan__info plan__info__name').each(function(i, element){
+
+            var result = {};
+
+            result.title = $(this).children('a').text();
+            result.link = $(this).children('a').attr('href');
+
+            db.Workout.create(result)
+            .then(function(dbWorkout){
+                console.log(dbWorkout);
+            })
+            .catch(function(err){
+                console.log(err);
+            });
+        });
+        res.send('Workouts Scraped');
+    });
+});
+
+
+
