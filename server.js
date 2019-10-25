@@ -34,7 +34,18 @@ mongoose.connect(MONGODB_URI,  { useNewUrlParser: true });
 //Homepage Route
 
 app.get('/', function(req, res){
-    db.
+    db.Article.find({})
+    .sort({ _id: 1 })
+    .then(function(dbArticles){
+        res.resnder('index', {
+            dbArticles: dbArticles,
+            homepage: true,
+            noted: false
+        })
+    })
+    .catch(function(err){
+        res.send(err);
+    })
 })
 
 //Scrape Articles

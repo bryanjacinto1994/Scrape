@@ -1,6 +1,6 @@
 //Export the Article and Note JavaScript Files 
 
 module.exports = {
-    Health: require('./Health'),
+    Article: require('./Article'),
     Note: require('./Note')
 };

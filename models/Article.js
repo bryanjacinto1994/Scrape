@@ -5,7 +5,7 @@ var Schema = mongoose.Schema;
 
 //Create a new Article schema
 
-var HealthSchema = new Schema({
+var ArticleSchema = new Schema({
 
     name: {type: String, required: true},
     note: {type: Schema.Types.ObjectId, ref: 'Note'},
@@ -14,6 +14,6 @@ var HealthSchema = new Schema({
     time: {type: Date, default: Date.now}      
 });
 
-var Health = mongoose.model('Health', HealthSchema);
+var Article = mongoose.model('Article', ArticleSchema);
 
-module.exports = Health;
+module.exports = Article;
