@@ -114,7 +114,7 @@ app.get('/articles', function (req, res) {
 
 app.get('/articles/:id', function (req, res) {
 
-    db.Workout.findOne({ _id: req.params.id })
+    db.Article.findOne({ _id: req.params.id })
         .populate('note')
         .then(function (dbArticle) {
             res.json(dbArticle);
@@ -140,6 +140,22 @@ app.post('/articles/:id', function (req, res) {
                 });
 
         });
+});
+
+app.delete('/articles/:id/:deleteId', function(req, res){
+    db.Note.deleteOne({ _id: req.params.deleteId})
+    .then(function(){
+        db.Article.findOneAndUpdate({
+            _id: req.params.id
+        },{'$pull': { note: req.params.deleteId }},{new: true})
+        .populate('note')
+        .then(function(){
+            res.json(req.params.deleteId);
+        })
+        .catch(function(err){
+            res.send(err);
+        });
+    });
 });
 
 // Route to Delete Notes
