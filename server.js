@@ -28,115 +28,123 @@ app.set('view engine', 'handlebars');
 //MongoDB connection
 // If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
-mongoose.connect(MONGODB_URI,  { useNewUrlParser: true });
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 
 //Routes
 //Homepage Route
 
-app.get('/', function(req, res){
+app.get('/', function (req, res) {
     db.Article.find({})
-    .sort({ _id: 1 })
-    .then(function(dbArticles){
-        res.resnder('index', {
-            dbArticles: dbArticles,
-            homepage: true,
-            noted: false
+        .sort({ _id: 1 })
+        .then(function (dbArticles) {
+            res.render('index', {
+                dbArticles: dbArticles,
+                homepage: true,
+                noted: false
+            })
         })
-    })
-    .catch(function(err){
-        res.send(err);
-    })
+        .catch(function (err) {
+            res.send(err);
+        })
 })
 
 //Noted articles routes
 
-app.get('/noted', function(req, res){
+app.get('/noted', function (req, res) {
     db.Article.find({})
-    .sort({ _id: 1})
-    .populate('note')
-    .where('note').ne([]).then(function(dbArticles){
-        res.render('index', {
-            dbArticles: dbArticles,
-            homepage: true,
-            noted: false
+        .sort({ _id: 1 })
+        .populate('note')
+        .where('note').ne([]).then(function (dbArticles) {
+            res.render('index', {
+                dbArticles: dbArticles,
+                homepage: true,
+                noted: false
+            })
         })
-    })
-    .catch(function(err){
-        res.send(error)
-    });
+        .catch(function (err) {
+            res.send(error)
+        });
 });
 
 //Scrape Articles
 
 app.get('/scrape', function (req, res) {
 
-    axios.get('https://www.nytimes.com/section/us')
+    axios.get('https://www.nytimes.com')
         .then(function (response) {
 
             var $ = cheerio.load(response.data);
 
-            $('article').each(function (i, element) {
+            $('h2.story-heading').each(function (i, element) {
 
                 var result = {};
 
-                result.title = $(this).children('h2').text();
-                result.link = $(this).children('a').attr('href');
+                result.title = $(element).children().text();
+                result.link = $(element).children().attr('href');
 
                 db.Article.create(result)
                     .then(function (dbArticle) {
-                        res.json(dbArticle);
+                        console.log(dbArticle);
                     })
                     .catch(function (err) {
-                        res.json(err);
+                        console.log(err);
                     });
             });
-            res.send('Articles Scraped');
-        });
+            res.redirect('/');
+        })
+        .catch(function (err) {
+            res.send(err);
+        })
 });
 
 //Get all News articles
 
 app.get('/articles', function (req, res) {
 
-    db.Article.find({}).then(function (dbArticle) {
+    db.Article.find({}).sort({ _id: 1 }).then(function (dbArticle) {
         res.json(dbArticle);
     })
         .catch(function (err) {
-            res.json(err);
+            res.send(err);
         });
 
 });
 
-//Get specific workouts id and populate with note
+//Get specific articles id and populate with note
 
 app.get('/articles/:id', function (req, res) {
 
-    db.Workout.find({ _id: req.params.id })
+    db.Workout.findOne({ _id: req.params.id })
         .populate('note')
         .then(function (dbArticle) {
             res.json(dbArticle);
         })
         .catch(function (err) {
-            res.json(err);
+            res.send(err);
         });
 });
 
-// Route for saving/updating an Workout associated Note
+// Route for saving/updating an Article associated Note
 
 app.post('/articles/:id', function (req, res) {
 
     db.Note.create(req.body)
         .then(function (dbNote) {
-            return db.Article.findOneAndUpdate({ _id: req.params.id }, { note: dbNote._id }, { new: true });
-        })
-        .then(function (dbArticle) {
-            res.json(dbArticle);
-        })
-        .catch(function (err) {
-            res.json(err);
-        });
+            return db.Article.findOneAndUpdate({ _id: req.params.id }, { '$push': { note: dbNote._id } }, { new: true })
+                .populate('note')
+                .then(function (dbNote) {
+                    res.json(dbNote);
+                })
+                .catch(function (err) {
+                    res.send(err);
+                });
 
+        });
 });
+
+// Route to Delete Notes
+
+
 
 app.listen(3000, function () {
     console.log('Application Running On PORT 3000');
