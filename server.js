@@ -76,14 +76,13 @@ app.get('/scrape', function(req, res){
 
 app.get('/health', function(req, res){
     
-    db.Health.find({}, function(error, found){
-        if(error){
-            res.json(error)
-        }
-        else{
-            res.json(found)
-        }
+    db.Health.find({}).then(function(dbHealth){
+        res.json(db.Health);
+    })
+    .catch(function(err){
+        res.json(err);
     });
+        
 });
 
 //Get specific workouts id and populate with note
