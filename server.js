@@ -23,99 +23,92 @@ app.use(express.static('public'));
 
 //Handlebars
 var exphbs = require('express-handlebars');
-app.engine('handlebars', exphbs({ defaultLayout: 'main'}));
+app.engine('handlebars', exphbs({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
 //MongoDB connection
 // If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
-
-mongoose.connect(MONGODB_URI);
+mongoose.connect(MONGODB_URI,  { useNewUrlParser: true });
 
 //Routes
-
-//Root Route
+//Homepage Route
 
 app.get('/', function(req, res){
-    db.Health.find({}).sort({ time: -1 }).populate('notes.note').then(function(dbHealth){
-        res.json('index', {result: dbHealth});
-    })
-    .catch(function(err){
-        res.json(err);
-    })
+    db.
 })
 
 //Scrape Articles
 
-app.get('/scrape', function(req, res){
+app.get('/scrape', function (req, res) {
 
-    axios.get('https://www.usatoday.com/news/health/')
-    .then(function(response){
+    axios.get('https://www.nytimes.com/section/us')
+        .then(function (response) {
 
-        var $ = cheerio.load(response.data);
+            var $ = cheerio.load(response.data);
 
-        $('div.p1-title').each(function(i, element){
+            $('article').each(function (i, element) {
 
-            var result = {};
+                var result = {};
 
-            result.title = $(element).children('a').text();
-            result.link = $(element).children('a').attr('href');
+                result.title = $(this).children('h2').text();
+                result.link = $(this).children('a').attr('href');
 
-            db.Health.create(result)
-            .then(function(dbHealth){
-                console.log(dbHealth);
-            })
-            .catch(function(err){
-                console.log(err);
+                db.Article.create(result)
+                    .then(function (dbArticle) {
+                        res.json(dbArticle);
+                    })
+                    .catch(function (err) {
+                        res.json(err);
+                    });
             });
+            res.send('Articles Scraped');
         });
-        res.send('Workouts Scraped');
-    });
 });
 
-//Get all health articles
+//Get all News articles
 
-app.get('/health', function(req, res){
-    
-    db.Health.find({}).then(function(dbHealth){
-        res.json(db.Health);
+app.get('/articles', function (req, res) {
+
+    db.Article.find({}).then(function (dbArticle) {
+        res.json(dbArticle);
     })
-    .catch(function(err){
-        res.json(err);
-    });
-        
+        .catch(function (err) {
+            res.json(err);
+        });
+
 });
 
 //Get specific workouts id and populate with note
 
-app.get('/health/:id', function(req, res){
+app.get('/articles/:id', function (req, res) {
 
-    db.Workout.find({_id: req.params.id})
-    .populate('note')
-    .then(function(dbWorkout){
-        res.json(dbWorkout);
-    })
-    .catch(function(err){
-        res.json(dbWorkout);
-    });
+    db.Workout.find({ _id: req.params.id })
+        .populate('note')
+        .then(function (dbArticle) {
+            res.json(dbArticle);
+        })
+        .catch(function (err) {
+            res.json(err);
+        });
 });
 
 // Route for saving/updating an Workout associated Note
 
-app.post('/health/:id', function(req, res){
+app.post('/articles/:id', function (req, res) {
 
-db.Note.create(req.body)
-.then(function(dbNote){
-    return db.Health.findOneAndUpdate({_id: req.params.id}, {note: dbNote._id}, {new: true});
-})
-.then(function(dbHealth){
-    res.json(dbHealth);
-})
-.catch(function(err){
-    res.json(err);
-});
-    
+    db.Note.create(req.body)
+        .then(function (dbNote) {
+            return db.Article.findOneAndUpdate({ _id: req.params.id }, { note: dbNote._id }, { new: true });
+        })
+        .then(function (dbArticle) {
+            res.json(dbArticle);
+        })
+        .catch(function (err) {
+            res.json(err);
+        });
+
 });
 
-app.listen(3000, function(){
+app.listen(3000, function () {
     console.log('Application Running On PORT 3000');
 });
