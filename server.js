@@ -36,9 +36,9 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 app.get('/', function (req, res) {
     db.Article.find({})
         .sort({ _id: 1 })
-        .then(function (dbArticles) {
+        .then(function (dbArticle) {
             res.render('index', {
-                dbArticles: dbArticles,
+                dbArticle: dbArticle,
                 homepage: true,
                 noted: false
             })
@@ -54,9 +54,9 @@ app.get('/noted', function (req, res) {
     db.Article.find({})
         .sort({ _id: 1 })
         .populate('note')
-        .where('note').ne([]).then(function (dbArticles) {
+        .where('note').ne([]).then(function (dbArticle) {
             res.render('index', {
-                dbArticles: dbArticles,
+                dbArticle: dbArticle,
                 homepage: true,
                 noted: false
             })
@@ -79,9 +79,9 @@ app.get('/scrape', function (req, res) {
 
                 var result = {};
 
-                result.title = $(element).children().text();
+                result.name = $(element).children().text();
                 result.link = $(element).children().attr('href');
-
+                result.paragraph = $(element).children('div').text()
                 db.Article.create(result)
                     .then(function (dbArticle) {
                         console.log(dbArticle);
@@ -141,16 +141,16 @@ app.post('/articles/:id', function (req, res) {
 
         });
 });
-
-app.delete('/articles/:id/:deleteId', function(req, res){
-    db.Note.deleteOne({ _id: req.params.deleteId})
+// Route to Delete Notes
+app.delete('/articles/:id/:newsId', function(req, res){
+    db.Note.deleteOne({ _id: req.params.newsId})
     .then(function(){
         db.Article.findOneAndUpdate({
             _id: req.params.id
-        },{'$pull': { note: req.params.deleteId }},{new: true})
+        },{'$pull': { note: req.params.newsId }},{new: true})
         .populate('note')
         .then(function(){
-            res.json(req.params.deleteId);
+            res.json(req.params.newsId);
         })
         .catch(function(err){
             res.send(err);
@@ -158,7 +158,7 @@ app.delete('/articles/:id/:deleteId', function(req, res){
     });
 });
 
-// Route to Delete Notes
+
 
 
 

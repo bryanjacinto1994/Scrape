@@ -1,0 +1,5 @@
+//Notes
+
+function notes(newsId){
+    
+}

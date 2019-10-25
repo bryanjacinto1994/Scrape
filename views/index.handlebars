@@ -1,0 +1,33 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">NYTimes</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="/" {{#if homepage}} class='highlight-text'{{/if}}>Home</a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/noted" {{#if noted }} class='highlight-text'{{/if}}>Notes</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class='container'>
+    {{#each dbArticle }}
+    <div class='card'><a href='{{link}}' target= '_blank'></a></div>
+    <div class="card-content">
+        <h2>{{ name }} 
+            <a href='{{link}}' target='_blank'></a>
+        </h2>
+        <p>
+            {{ paragraph }}
+        </p>
+        <button class="notebtn" data-article="{{_id}}">
+            Notes
+        </button>
+    </div>
+    {{/each}}
+</div>
