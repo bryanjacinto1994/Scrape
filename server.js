@@ -33,7 +33,7 @@ mongoose.connect(MONGODB_URI);
 
 app.get('/scrape', function(req, res){
 
-    axios.get('https://www.bodybuilding.com/workout-plans/')
+    axios.get('https://www.usatoday.com/news/health/')
     .then(function(response){
 
         var $ = cheerio.load(response.data);
