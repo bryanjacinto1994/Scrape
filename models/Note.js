@@ -8,8 +8,7 @@ var Schema = mongoose.Schema;
 
 var NoteSchema = new Schema({
     
-    title: String,
-    body: String
+    body: {type: String, validate:[function(input){return input.length >= 3}]}
 });
 
 //Create the schema model by using mongoose model method
