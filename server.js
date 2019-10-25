@@ -48,6 +48,24 @@ app.get('/', function(req, res){
     })
 })
 
+//Noted articles routes
+
+app.get('/noted', function(req, res){
+    db.Article.find({})
+    .sort({ _id: 1})
+    .populate('note')
+    .where('note').ne([]).then(function(dbArticles){
+        res.render('index', {
+            dbArticles: dbArticles,
+            homepage: true,
+            noted: false
+        })
+    })
+    .catch(function(err){
+        res.send(error)
+    });
+});
+
 //Scrape Articles
 
 app.get('/scrape', function (req, res) {
